@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI News Intelligence - Mobile App Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .demo-container {
+            display: flex;
+            gap: 40px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 1400px;
+        }
+
+        .phone-frame {
+            width: 375px;
+            height: 667px;
+            background: #000;
+            border-radius: 40px;
+            padding: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .phone-frame::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 25px;
+            background: #000;
+            border-radius: 0 0 30px 30px;
+            z-index: 10;
+        }
+
+        .screen {
+            width: 100%;
+            height: 100%;
+            background: #f5f5f5;
+            border-radius: 35px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .screen.hidden {
+            display: none;
+        }
+
+        .header {
+            background: #0066cc;
+            color: white;
+            padding: 12px 16px;
+            font-size: 16px;
+            font-weight: 600;
+            padding-top: 30px;
+            text-align: center;
+        }
+
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0;
+        }
+
+        .article-card {
+            background: white;
+            margin: 8px;
+            border-radius: 8px;
+            padding: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .article-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #222;
+            margin-bottom: 6px;
+            line-height: 1.3;
+        }
+
+        .article-meta {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 6px;
+        }
+
+        .badge-row {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .sentiment-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .sentiment-positive {
+            background: #4CAF50;
+        }
+
+        .sentiment-negative {
+            background: #f44336;
+        }
+
+        .sentiment-neutral {
+            background: #FFC107;
+            color: #333;
+        }
+
+        .topic-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            background: #e3f2fd;
+            color: #0066cc;
+        }
+
+        .search-box {
+            background: white;
+            margin: 12px;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            font-size: 14px;
+            color: #999;
+        }
+
+        .button-row {
+            display: flex;
+            gap: 8px;
+            padding: 12px;
+            background: white;
+            margin-top: 8px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 13px;
+            color: white;
+            cursor: pointer;
+        }
+
+        .btn-rag {
+            background: #0066cc;
+        }
+
+        .btn-search {
+            background: #666;
+        }
+
+        .rag-result {
+            background: white;
+            margin: 12px;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid #0066cc;
+        }
+
+        .rag-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #0066cc;
+            margin-bottom: 6px;
+        }
+
+        .rag-answer {
+            font-size: 13px;
+            color: #333;
+            line-height: 1.4;
+            margin-bottom: 6px;
+        }
+
+        .confidence {
+            font-size: 11px;
+            color: #666;
+        }
+
+        .category-btn {
+            background: white;
+            margin: 8px 12px;
+            padding: 14px 12px;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .category-btn.selected {
+            border-color: #0066cc;
+            background: #e3f2fd;
+            color: #0066cc;
+        }
+
+        .summary-content {
+            padding: 16px;
+            background: white;
+            margin: 8px;
+            border-radius: 8px;
+        }
+
+        .summary-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #222;
+            margin-bottom: 6px;
+        }
+
+        .summary-meta {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 12px;
+        }
+
+        .section {
+            margin-bottom: 12px;
+        }
+
+        .section-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #0066cc;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+
+        .section-text {
+            font-size: 13px;
+            color: #333;
+            line-height: 1.5;
+        }
+
+        .sentiment-display {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 6px;
+        }
+
+        .sentiment-score {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .read-more-btn {
+            width: 100%;
+            padding: 12px;
+            background: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            margin-top: 12px;
+            cursor: pointer;
+        }
+
+        .tab-bar {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 49px;
+            background: white;
+            border-top: 1px solid #ddd;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding-bottom: 8px;
+        }
+
+        .tab-item {
+            flex: 1;
+            text-align: center;
+            cursor: pointer;
+            font-size: 10px;
+            color: #999;
+            transition: color 0.2s;
+        }
+
+        .tab-item.active {
+            color: #0066cc;
+        }
+
+        .tab-item span {
+            display: block;
+            font-size: 20px;
+            margin-bottom: 2px;
+        }
+
+        .tabs-wrapper {
+            padding-bottom: 49px;
+        }
+
+        .info-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .info-panel h2 {
+            color: #0066cc;
+            margin-bottom: 16px;
+            font-size: 22px;
+        }
+
+        .info-panel p {
+            color: #666;
+            margin-bottom: 12px;
+            line-height: 1.6;
+        }
+
+        .feature-list {
+            list-style: none;
+            margin-top: 16px;
+        }
+
+        .feature-list li {
+            color: #333;
+            padding: 8px 0;
+            padding-left: 24px;
+            position: relative;
+        }
+
+        .feature-list li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .screen-label {
+            text-align: center;
+            color: white;
+            margin-top: 20px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            padding: 8px 16px;
+            background: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #0066cc;
+            transition: all 0.2s;
+        }
+
+        .nav-btn:hover {
+            background: #e3f2fd;
+        }
+
+        .nav-btn.active {
+            background: #0066cc;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <!-- Phone Frame -->
+        <div>
+            <div class="phone-frame">
+                <div class="screen active" id="homeScreen">
+                    <div class="header">Top Headlines</div>
+                    <div class="content tabs-wrapper">
+                        <div class="article-card">
+                            <div class="article-title">Breaking: Major Tech Company Announces Revolutionary AI</div>
+                            <div class="article-meta">CNN • Dec 25, 2025</div>
+                            <div class="badge-row">
+                                <span class="sentiment-badge sentiment-positive">P</span>
+                                <span class="topic-badge">Technology</span>
+                            </div>
+                        </div>
+
+                        <div class="article-card">
+                            <div class="article-title">Stock Market Hits Record High Amid Economic Growth</div>
+                            <div class="article-meta">Reuters • Dec 25, 2025</div>
+                            <div class="badge-row">
+                                <span class="sentiment-badge sentiment-neutral">N</span>
+                                <span class="topic-badge">Business</span>
+                            </div>
+                        </div>
+
+                        <div class="article-card">
+                            <div class="article-title">Global Climate Report Shows Mixed Results</div>
+                            <div class="article-meta">BBC • Dec 25, 2025</div>
+                            <div class="badge-row">
+                                <span class="sentiment-badge sentiment-negative">−</span>
+                                <span class="topic-badge">Science</span>
+                            </div>
+                        </div>
+
+                        <div class="article-card">
+                            <div class="article-title">Sports: Championship Team Secures Victory</div>
+                            <div class="article-meta">ESPN • Dec 25, 2025</div>
+                            <div class="badge-row">
+                                <span class="sentiment-badge sentiment-positive">P</span>
+                                <span class="topic-badge">Sports</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-bar">
+                        <div class="tab-item active" onclick="showScreen('homeScreen'); setActiveTab(0)"><span>🏠</span>Home</div>
+                        <div class="tab-item" onclick="showScreen('categoriesScreen'); setActiveTab(1)"><span>📂</span>Categories</div>
+                        <div class="tab-item" onclick="showScreen('searchScreen'); setActiveTab(2)"><span>🔍</span>Search</div>
+                    </div>
+                </div>
+
+                <div class="screen" id="categoriesScreen">
+                    <div class="header">Categories</div>
+                    <div class="content tabs-wrapper">
+                        <div class="category-btn selected" onclick="selectCategory(this)">Top Headlines</div>
+                        <div class="category-btn" onclick="selectCategory(this)">Technology</div>
+                        <div class="category-btn" onclick="selectCategory(this)">Business</div>
+                        <div class="category-btn" onclick="selectCategory(this)">Sports</div>
+                        <div class="category-btn" onclick="selectCategory(this)">Health</div>
+                        <div class="category-btn" onclick="selectCategory(this)">Science</div>
+                        <div class="category-btn" onclick="selectCategory(this)">Entertainment</div>
+                        <div class="category-btn" onclick="selectCategory(this)">World</div>
+                    </div>
+                    <div class="tab-bar">
+                        <div class="tab-item" onclick="showScreen('homeScreen'); setActiveTab(0)"><span>🏠</span>Home</div>
+                        <div class="tab-item active" onclick="showScreen('categoriesScreen'); setActiveTab(1)"><span>📂</span>Categories</div>
+                        <div class="tab-item" onclick="showScreen('searchScreen'); setActiveTab(2)"><span>🔍</span>Search</div>
+                    </div>
+                </div>
+
+                <div class="screen" id="searchScreen">
+                    <div class="header">Search & Ask AI</div>
+                    <div class="content tabs-wrapper">
+                        <input type="text" class="search-box" placeholder="Ask a question or search...">
+                        <div class="button-row">
+                            <button class="btn btn-rag" onclick="showRAGResult()">Ask AI</button>
+                            <button class="btn btn-search">Search</button>
+                        </div>
+
+                        <div class="rag-result" id="ragResult" style="display: none;">
+                            <div class="rag-label">AI Answer:</div>
+                            <div class="rag-answer">Based on the latest news, the technology sector is experiencing unprecedented growth driven by AI innovations and digital transformation initiatives globally.</div>
+                            <div class="confidence">Confidence: 0.94</div>
+                            <div style="margin-top: 8px; font-size: 11px; font-weight: 600; color: #0066cc;">SOURCES:</div>
+                        </div>
+
+                        <div class="article-card" id="sourceArticle" style="display: none;">
+                            <div class="article-title">Breaking: Major Tech Company Announces Revolutionary AI</div>
+                            <div class="article-meta">CNN • Dec 25, 2025</div>
+                        </div>
+                    </div>
+                    <div class="tab-bar">
+                        <div class="tab-item" onclick="showScreen('homeScreen'); setActiveTab(0)"><span>🏠</span>Home</div>
+                        <div class="tab-item" onclick="showScreen('categoriesScreen'); setActiveTab(1)"><span>📂</span>Categories</div>
+                        <div class="tab-item active" onclick="showScreen('searchScreen'); setActiveTab(2)"><span>🔍</span>Search</div>
+                    </div>
+                </div>
+
+                <div class="screen" id="summaryScreen">
+                    <div class="header">Article Summary</div>
+                    <div class="content tabs-wrapper">
+                        <div class="summary-content">
+                            <div class="summary-title">Breaking: Major Tech Company Announces Revolutionary AI</div>
+                            <div class="summary-meta">CNN • Dec 25, 2025</div>
+
+                            <div class="section">
+                                <div class="section-title">Summary</div>
+                                <div class="section-text">The leading technology company has unveiled a groundbreaking artificial intelligence system that promises to transform the industry. The system demonstrates unprecedented capabilities in natural language processing and autonomous decision-making, with applications across multiple sectors including healthcare, finance, and education.</div>
+                            </div>
+
+                            <div class="section">
+                                <div class="section-title">Sentiment Analysis</div>
+                                <div class="sentiment-display">
+                                    <span class="sentiment-badge sentiment-positive">POSITIVE</span>
+                                    <span class="sentiment-score">Score: 85%</span>
+                                </div>
+                            </div>
+
+                            <button class="read-more-btn">Read Full Article →</button>
+                        </div>
+                    </div>
+                    <div class="tab-bar">
+                        <div class="tab-item" onclick="showScreen('homeScreen'); setActiveTab(0)"><span>🏠</span>Home</div>
+                        <div class="tab-item" onclick="showScreen('categoriesScreen'); setActiveTab(1)"><span>📂</span>Categories</div>
+                        <div class="tab-item" onclick="showScreen('searchScreen'); setActiveTab(2)"><span>🔍</span>Search</div>
+                    </div>
+                </div>
+            </div>
+            <div class="screen-label">Android Emulator View</div>
+            <div class="nav-buttons">
+                <button class="nav-btn active" onclick="showScreen('homeScreen'); setActiveTab(0)">Home</button>
+                <button class="nav-btn" onclick="showScreen('categoriesScreen'); setActiveTab(1)">Categories</button>
+                <button class="nav-btn" onclick="showScreen('searchScreen'); setActiveTab(2)">Search</button>
+                <button class="nav-btn" onclick="showScreen('summaryScreen'); setActiveTab(0)">Summary</button>
+            </div>
+        </div>
+
+        <!-- Info Panel -->
+        <div class="info-panel">
+            <h2>📱 AI News Intelligence</h2>
+            <p><strong>React Native Mobile App</strong></p>
+            <p>A production-ready AI-powered news application with intelligent search, sentiment analysis, and real-time content delivery.</p>
+
+            <h3 style="color: #333; margin-top: 20px; margin-bottom: 12px; font-size: 16px;">✨ Features</h3>
+            <ul class="feature-list">
+                <li>Real-time news headlines</li>
+                <li>AI-powered Q&A (RAG)</li>
+                <li>Sentiment analysis badges</li>
+                <li>Category filtering</li>
+                <li>Article summaries</li>
+                <li>Source attribution</li>
+                <li>Pull-to-refresh</li>
+                <li>Type-safe (TypeScript)</li>
+                <li>Redux state management</li>
+                <li>Axios API client</li>
+            </ul>
+
+            <h3 style="color: #333; margin-top: 20px; margin-bottom: 12px; font-size: 16px;">🛠 Tech Stack</h3>
+            <p style="font-size: 12px; background: #f0f0f0; padding: 10px; border-radius: 6px; color: #333;">
+                <strong>React Native 0.73</strong> • TypeScript • Redux Toolkit • Axios • React Navigation
+            </p>
+
+            <h3 style="color: #333; margin-top: 20px; margin-bottom: 12px; font-size: 16px;">📊 Screens</h3>
+            <ul class="feature-list">
+                <li><strong>Home:</strong> Top headlines with refresh</li>
+                <li><strong>Categories:</strong> Browse by topic</li>
+                <li><strong>Search:</strong> Ask AI or keyword search</li>
+                <li><strong>Summary:</strong> Article details & analysis</li>
+            </ul>
+
+            <p style="margin-top: 20px; font-size: 12px; color: #999;">
+                <strong>Status:</strong> ✅ Production Ready | <strong>Backend:</strong> FastAPI at localhost:8000 | <strong>Emulator:</strong> Ready to run
+            </p>
+        </div>
+    </div>
+
+    <script>
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function setActiveTab(index) {
+            document.querySelectorAll('.tab-item').forEach((item, i) => {
+                item.classList.toggle('active', i === index);
+            });
+        }
+
+        function selectCategory(element) {
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            element.classList.add('selected');
+        }
+
+        function showRAGResult() {
+            document.getElementById('ragResult').style.display = 'block';
+            document.getElementById('sourceArticle').style.display = 'block';
+        }
+
+        // Set initial active tab
+        setActiveTab(0);
+    </script>
+</body>
+</html>
